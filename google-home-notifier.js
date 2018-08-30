@@ -1,5 +1,6 @@
 var Client = require('castv2-client').Client;
 var DefaultMediaReceiver = require('castv2-client').DefaultMediaReceiver;
+var googletts = require('google-tts-api');
 var mdns = require('mdns');
 var sequence = [
   mdns.rst.DNSServiceResolve(),
@@ -11,26 +12,28 @@ var sequence = [
 var browser = mdns.createBrowser(mdns.tcp('googlecast'),
     {resolverSequence: sequence});
 var deviceAddress;
-var language;
+var language = 'us';
+var speechRate = 1;
 
-var device = function(name, lang = 'en') {
-    device = name;
-    language = lang;
-    return this;
+var device = function(name) {
+  device = name;
+  return this;
 };
 
-var ip = function(ip, lang = 'en') {
+var ip = function(ip) {
   deviceAddress = ip;
-  language = lang;
   return this;
 }
 
-var googletts = require('google-tts-api');
-var googlettsaccent = 'us';
-var accent = function(accent) {
-  googlettsaccent = accent;
+var ttsLanguage = function(lang) {
+  language = lang;
   return this;
-}
+};
+
+var ttsSpeed = function(speed) {
+  speechRate = speed;
+  return this;
+};
 
 var notify = function(message, callback) {
   if (!deviceAddress){
@@ -83,7 +86,7 @@ var play = function(mp3_url, callback) {
 };
 
 var getSpeechUrl = function(text, host, callback) {
-  googletts(text, language, 1, 1000, googlettsaccent).then(function (url) {
+  googletts(text, language, speechRate, 1000).then(function (url) {
     onDeviceUp(host, url, function(res){
       callback(res)
     });
@@ -124,6 +127,7 @@ var onDeviceUp = function(host, url, callback) {
 
 exports.ip = ip;
 exports.device = device;
-exports.accent = accent;
+exports.language = ttsLanguage;
+exports.speed = ttsSpeed;
 exports.notify = notify;
 exports.play = play;
