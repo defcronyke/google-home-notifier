@@ -10,82 +10,76 @@ var deviceName = 'Google Home';
 
 var urlencodedParser = bodyParser.urlencoded({ extended: false });
 
-var sendText = function(text, req, res) {
-    try {
-      if (text.startsWith('http')){
-        var mp3_url = text;
-        googlehome.device(deviceName)
-            .play(mp3_url, function(notifyRes) {
-              if (!notifyRes) {
-                res.send(deviceName + ' cannot play sound.\n');
-                return;
-              }
-              console.log(notifyRes);
-              res.send(deviceName + ' will play sound from url: ' + mp3_url + '\n');
-            });
-      } else {
-        var language = 'ja'; // default language code
-        if (req.body.language) {
-          language = req.body.language;
-        }
-        var speed = 1;
-        if (req.body.speed) {
-          speed = Number(req.body.speed);
-        }
-        googlehome.device(deviceName)
-            .language(language)
-            .speed(speed)
-            .notify(text, function(notifyRes) {
-              if (!notifyRes) {
-                res.send(deviceName + ' cannot say text.\n');
-                return;
-              }
-              console.log(notifyRes);
-              res.send(deviceName + ' will say: ' + text + '\n');
-            });
-      }
-    } catch(err) {
-      console.log(err);
-      res.sendStatus(500);
-      res.send(err);
+var sendText = (params, res) => {
+  try {
+    if (params.ip) {
+      googlehome.ip(req.query.ip);
     }
+
+    if (params.text.startsWith('http')){
+      var mp3_url = params.text;
+      googlehome.device(deviceName)
+          .play(mp3_url, (notifyRes) => {
+            if (!notifyRes) {
+              res.send(deviceName + ' cannot play sound.\n');
+              return;
+            }
+            console.log(notifyRes);
+            res.send(deviceName + ' will play sound from url: ' + mp3_url + '\n');
+          });
+    } else {
+      var language = 'en'; // default language code
+      if (params.language) {
+        language = params.language;
+      }
+      var speed = 1;
+      if (params.speed) {
+        speed = Number(params.speed);
+      }
+      googlehome.device(deviceName)
+          .language(language)
+          .speed(speed)
+          .notify(params.text, (notifyRes) => {
+            if (!notifyRes) {
+              res.send(deviceName + ' cannot say text.\n');
+              return;
+            }
+            console.log(notifyRes);
+            res.send(deviceName + ' will say: ' + params.text + '\n');
+          });
+    }
+  } catch (err) {
+    console.log(err);
+    res.sendStatus(500);
+    res.send(err);
+  }
 };
 
-app.post('/google-home-notifier', urlencodedParser, function (req, res) {
+app.post('/google-home-notifier', urlencodedParser, (req, res) => {
   
   if (!req.body) return res.sendStatus(400)
   console.log(req.body);
   
-  if (req.body.ip) {
-    googlehome.ip(req.body.ip);
-  }
-
-  var text = req.body.text;
-  if (text){
-    sendText(text, req, res);
-  }else{
+  if (req.body.text) {
+    sendText(req.body, res);
+  } else {
     res.send('Please POST "text=Hello Google Home"');
   }
-})
+});
 
-app.get('/google-home-notifier', function (req, res) {
+app.get('/google-home-notifier', (req, res) => {
 
   console.log(req.query);
 
-  if (req.query.ip) {
-    googlehome.ip(req.query.ip);
-  }
-
-  var text = req.query.text;
-  if (text) {
-    sendText(text, req, res);
-  }else{
+  if (req.query.text) {
+    sendText(req.query, res);
+  } else {
     res.send('Please GET "text=Hello+Google+Home"');
   }
-})
+});
 
 app.listen(serverPort, function () {
-  ngrok.connect({configPath: '/home/pi/.ngrok2/ngrok.yml', addr: serverPort}, function (err, url) {
+  ngrok.connect({configPath: '/home/pi/.ngrok2/ngrok.yml', addr: serverPort}, (err, url) => {
     if (err) {
       console.log('ngrok.connect failed');
       console.log(err);
@@ -96,10 +90,10 @@ app.listen(serverPort, function () {
     console.log('    ' + url + '/google-home-notifier');
     console.log('GET example:');
     console.log('curl -X GET ' + url + '/google-home-notifier?text=Hello+Google+Home');
-	console.log('POST example:');
-	console.log('curl -X POST -d "text=Hello Google Home" ' + url + '/google-home-notifier');
+    console.log('POST example:');
+    console.log('curl -X POST -d "text=Hello Google Home" ' + url + '/google-home-notifier');
   });
-})
+});
 
 exitHook(() => {
   ngrok.disconnect();
