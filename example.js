@@ -28,17 +28,16 @@ var sendText = (params, res) => {
             res.send(deviceName + ' will play sound from url: ' + mp3_url + '\n');
           });
     } else {
-      var language = 'en'; // default language code
       if (params.language) {
-        language = params.language;
+        googlehome.language(params.language);
       }
-      var speed = 1;
       if (params.speed) {
-        speed = Number(params.speed);
+        googlehome.speed(Number(params.speed));
+      }
+      if (params.timeout) {
+        googlehome.timeout(Number(params.timeout));
       }
       googlehome.device(deviceName)
-          .language(language)
-          .speed(speed)
           .notify(params.text, (notifyRes) => {
             if (!notifyRes) {
               res.send(deviceName + ' cannot say text.\n');

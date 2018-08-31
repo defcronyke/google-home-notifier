@@ -14,6 +14,7 @@ var browser = mdns.createBrowser(mdns.tcp('googlecast'),
 var deviceAddress;
 var language = 'us';
 var speechRate = 1;
+var ttsTimeout = 1000;
 
 var notify = (message, callback) => {
   if (!deviceAddress){
@@ -66,12 +67,13 @@ var play = (mp3_url, callback) => {
 };
 
 var ttsAndPlay = (text, host, callback) => {
-  googletts(text, language, speechRate, 1000).then((url) => {
+  googletts(text, language, speechRate, ttsTimeout).then((url) => {
     playMp3onDevice(host, url, (res) => {
       callback(res)
     });
   }).catch((err) => {
     console.error(err.stack);
+    callback();
   });
 };
 
@@ -113,6 +115,10 @@ exports.language = (lang) => {
 };
 exports.speed = (speed) => {
   speechRate = speed;
+  return this;
+};
+exports.timeout = (timeout) => {
+  ttsTimeout = timeout;
   return this;
 };
 exports.notify = notify;
