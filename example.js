@@ -13,7 +13,7 @@ var urlencodedParser = bodyParser.urlencoded({ extended: false });
 var sendText = (params, res) => {
   try {
     if (params.ip) {
-      googlehome.ip(req.query.ip);
+      googlehome.ip(params.ip);
     }
 
     if (params.text.startsWith('http')){
