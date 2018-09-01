@@ -15,6 +15,7 @@ var deviceAddress;
 var language = 'us';
 var speechRate = 1;
 var ttsTimeout = 1000;
+var speakerVolume;
 
 var notify = (message, callback) => {
   if (!deviceAddress){
@@ -81,6 +82,16 @@ var playMp3onDevice = (host, url, callback) => {
   console.log('playing %s on %s', url, host);
   var client = new Client();
   client.connect(host, () => {
+    if (speakerVolume) {
+      client.setVolume({level: speakerVolume}, (err, vol) => {
+        if (err) {
+          console.log('Failed to set volume: %s', err.message);
+          client.close();
+          callback();
+        }
+        speakerVolume = undefined;
+      });
+    };
     client.launch(DefaultMediaReceiver, (err, player) => {
       if (err) {
         console.log('Failed to launch: %s', err.message);
@@ -100,6 +111,9 @@ var playMp3onDevice = (host, url, callback) => {
         }
         client.close();
         callback('Device notified');
+      });
+      player.on('status', (status) => {
+        console.log('player status: %s', status.playerState);
       });
     });
   });
@@ -129,6 +143,14 @@ exports.speed = (speed) => {
 };
 exports.timeout = (timeout) => {
   ttsTimeout = timeout;
+  return this;
+};
+exports.volume = (volume) => {
+  if (volume < 0.0 || volume > 1.0) {
+    console.log('Invalid volume value: %f', volume);
+  } else {
+    speakerVolume = volume;
+  }
   return this;
 };
 exports.notify = notify;

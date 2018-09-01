@@ -15,6 +15,9 @@ var sendText = (params, res) => {
     if (params.ip) {
       googlehome.ip(params.ip);
     }
+    if (params.volume) {
+      googlehome.volume(Number(params.volume));
+    }
 
     if (params.text.startsWith('http')){
       var mp3_url = params.text;
