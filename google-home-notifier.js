@@ -20,9 +20,9 @@ var notify = (message, callback) => {
   if (!deviceAddress){
     browser.start();
     browser.on('error', (err) => {
-        console.log(err);
-        browser.stop();
-        callback();
+      console.log('Browser Error: %s', err.message);
+      browser.stop();
+      callback();
     });
     browser.on('serviceUp', (service) => {
       console.log('Device "%s" at %s:%d', service.name, service.addresses[0], service.port);
@@ -45,9 +45,9 @@ var play = (mp3_url, callback) => {
   if (!deviceAddress){
     browser.start();
     browser.on('error', (err) => {
-        console.log(err);
-        browser.stop();
-        callback();
+      console.log('Browser Error: %s', err.message);
+      browser.stop();
+      callback();
     });
     browser.on('serviceUp', (service) => {
       console.log('Device "%s" at %s:%d', service.name, service.addresses[0], service.port);
@@ -82,12 +82,22 @@ var playMp3onDevice = (host, url, callback) => {
   var client = new Client();
   client.connect(host, () => {
     client.launch(DefaultMediaReceiver, (err, player) => {
+      if (err) {
+        console.log('Failed to launch: %s', err.message);
+        client.close();
+        callback();
+      }
       var media = {
         contentId: url,
         contentType: 'audio/mp3',
         streamType: 'BUFFERED' // or LIVE
       };
       player.load(media, { autoplay: true }, (err, status) => {
+        if (err) {
+          console.log('Failed to load: %s', err.message);
+          client.close();
+          callback();
+        }
         client.close();
         callback('Device notified');
       });
@@ -95,7 +105,7 @@ var playMp3onDevice = (host, url, callback) => {
   });
 
   client.on('error', (err) => {
-    console.log('Error: %s', err.message);
+    console.log('Client Error: %s', err.message);
     client.close();
     callback();
   });
