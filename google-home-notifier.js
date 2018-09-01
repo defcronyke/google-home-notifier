@@ -2,31 +2,49 @@ var Client = require('castv2-client').Client;
 var DefaultMediaReceiver = require('castv2-client').DefaultMediaReceiver;
 var googletts = require('google-tts-api');
 var mdns = require('mdns');
-var sequence = [
-  mdns.rst.DNSServiceResolve(),
-  'DNSServiceGetAddrInfo' in mdns.dns_sd ?
-    mdns.rst.DNSServiceGetAddrInfo() :
-      mdns.rst.getaddrinfo({families:[4]}),
-      mdns.rst.makeAddressesUnique()
-];
-var browser = mdns.createBrowser(mdns.tcp('googlecast'),
-    {resolverSequence: sequence});
+var browser;
 var deviceAddress;
 var language = 'us';
 var speechRate = 1;
 var ttsTimeout = 1000;
 var speakerVolume;
+const defaultValue = {
+  language: 'en',
+  deviceAddress: undefined,
+  speechRate: 1.0,
+  ttsTimeout: 1000,
+  speakerVolume: 0.5,
+};
+
+var createMdnsBrowser = () => {
+  var sequence = [
+    mdns.rst.DNSServiceResolve(),
+    'DNSServiceGetAddrInfo' in mdns.dns_sd ?
+      mdns.rst.DNSServiceGetAddrInfo() :
+        mdns.rst.getaddrinfo({families:[4]}),
+        mdns.rst.makeAddressesUnique()
+  ];
+  return mdns.createBrowser(mdns.tcp('googlecast'),
+    {resolverSequence: sequence});
+};
+
+var startMdnsBrowser = (callback) => {
+  browser = createMdnsBrowser();
+  browser.start();
+  browser.on('error', (err) => {
+    console.log('Browser Error: %s', err.message);
+    browser.stop();
+    callback();
+  });
+  browser.on('serviceUp', (service) => {
+    console.log('Device "%s" at %s:%d', service.name, service.addresses[0], service.port);
+    callback(service);
+  });
+};
 
 var notify = (message, callback) => {
-  if (!deviceAddress){
-    browser.start();
-    browser.on('error', (err) => {
-      console.log('Browser Error: %s', err.message);
-      browser.stop();
-      callback();
-    });
-    browser.on('serviceUp', (service) => {
-      console.log('Device "%s" at %s:%d', service.name, service.addresses[0], service.port);
+  if (!deviceAddress) {
+    startMdnsBrowser((service) => {
       if (service.name.includes(device.replace(' ', '-'))){
         deviceAddress = service.addresses[0];
         ttsAndPlay(message, deviceAddress, (res) => {
@@ -43,19 +61,12 @@ var notify = (message, callback) => {
 };
 
 var play = (mp3_url, callback) => {
-  if (!deviceAddress){
-    browser.start();
-    browser.on('error', (err) => {
-      console.log('Browser Error: %s', err.message);
-      browser.stop();
-      callback();
-    });
-    browser.on('serviceUp', (service) => {
-      console.log('Device "%s" at %s:%d', service.name, service.addresses[0], service.port);
+  if (!deviceAddress) {
+    startMdnsBrowser((service) => {
       if (service.name.includes(device.replace(' ', '-'))){
         deviceAddress = service.addresses[0];
         playMp3onDevice(deviceAddress, mp3_url, (res) => {
-          callback(res)
+          callback(res);
         });
       }
       browser.stop();
@@ -74,6 +85,9 @@ var ttsAndPlay = (text, host, callback) => {
     });
   }).catch((err) => {
     console.log('googletts error: ' + err);
+    ttsTimeout = defaultValue.ttsTimeout;
+    speechRate = defaultValue.speechRate;
+    language = defaultValue.language;
     callback();
   });
 };
@@ -108,6 +122,7 @@ var playMp3onDevice = (host, url, callback) => {
       player.load(media, { autoplay: true }, (err, status) => {
         if (err) {
           console.log('Failed to load: %s', err.message);
+          language = defaultValue.language;
           client.close();
           callback();
           return;
@@ -120,6 +135,7 @@ var playMp3onDevice = (host, url, callback) => {
 
   client.on('error', (err) => {
     console.log('Client Error: %s', err.message);
+    deviceAddress = defaultValue.deviceAddress;
     client.close();
     callback();
   });

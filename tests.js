@@ -52,7 +52,6 @@ var params = [
             volume: 1.1,
             text: "Test Number 6",
             language: "ja",
-            ip: "192.168.1.4",
         }
     },
     {
@@ -60,7 +59,7 @@ var params = [
         data: {
             text: "Test Number 7",
             language: "ja",
-            timeout: 100,
+            timeout: 10,
         }
     },
     {
