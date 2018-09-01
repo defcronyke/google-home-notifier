@@ -73,7 +73,7 @@ var ttsAndPlay = (text, host, callback) => {
       callback(res)
     });
   }).catch((err) => {
-    console.error(err.stack);
+    console.log('googletts error: ' + err);
     callback();
   });
 };
@@ -88,6 +88,7 @@ var playMp3onDevice = (host, url, callback) => {
           console.log('Failed to set volume: %s', err.message);
           client.close();
           callback();
+          return;
         }
         speakerVolume = undefined;
       });
@@ -97,6 +98,7 @@ var playMp3onDevice = (host, url, callback) => {
         console.log('Failed to launch: %s', err.message);
         client.close();
         callback();
+        return;
       }
       var media = {
         contentId: url,
@@ -108,12 +110,10 @@ var playMp3onDevice = (host, url, callback) => {
           console.log('Failed to load: %s', err.message);
           client.close();
           callback();
+          return;
         }
         client.close();
         callback('Device notified');
-      });
-      player.on('status', (status) => {
-        console.log('player status: %s', status.playerState);
       });
     });
   });
