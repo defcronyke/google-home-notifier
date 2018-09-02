@@ -29,7 +29,7 @@ var createMdnsBrowser = () => {
     {resolverSequence: sequence});
 };
 
-var startMdnsBrowser = (callback) => {
+var startMdnsBrowser = (onDeviceFound, callback) => {
   browser = createMdnsBrowser();
   browser.start();
   browser.on('error', (err) => {
@@ -39,7 +39,13 @@ var startMdnsBrowser = (callback) => {
   });
   browser.on('serviceUp', (service) => {
     console.log('Device "%s" at %s:%d', service.name, service.addresses[0], service.port);
-    callback(service);
+      if (service.name.includes(deviceName.replace(' ', '-'))){
+        deviceAddress = service.addresses[0];
+        onDeviceFound(deviceAddress);
+      } else {
+        callback();
+      }
+      browser.stop();
   });
 };
 
@@ -50,17 +56,11 @@ var notify = (message, callback) => {
     return;
   }
   if (!deviceAddress) {
-    startMdnsBrowser((service) => {
-      if (service.name.includes(deviceName.replace(' ', '-'))){
-        deviceAddress = service.addresses[0];
-        ttsAndPlay(message, deviceAddress, (res) => {
-          callback(res);
-        });
-      } else {
-        callback();
-      }
-      browser.stop();
-    });
+    startMdnsBrowser((deviceAddress) => {
+      ttsAndPlay(message, deviceAddress, (res) => {
+        callback(res);
+      });
+    }, callback);
   } else {
     ttsAndPlay(message, deviceAddress, (res) => {
       callback(res);
@@ -75,17 +75,11 @@ var play = (mp3_url, callback) => {
     return;
   }
   if (!deviceAddress) {
-    startMdnsBrowser((service) => {
-      if (service.name.includes(deviceName.replace(' ', '-'))){
-        deviceAddress = service.addresses[0];
-        playMp3onDevice(deviceAddress, mp3_url, (res) => {
-          callback(res);
-        });
-      } else {
-        callback();
-      }
-      browser.stop();
-    });
+    startMdnsBrowser((deviceAddress) => {
+      playMp3onDevice(deviceAddress, mp3_url, (res) => {
+        callback(res);
+      });
+    }, callback);
   } else {
     playMp3onDevice(deviceAddress, mp3_url, (res) => {
       callback(res)
