@@ -1,16 +1,17 @@
 require('log-timestamp');
 var request = require('request');
 
-var url = "http://192.168.1.8:8091/google-home-notifier";
+var notifyUrl = "http://192.168.1.8:8091/google-home-notifier";
+var playUrl = "http://192.168.1.8:8091/google-home-play";
 
 var songParams = [
     {
         volume: 1.0,
-        text: "https://www.gnu.org/music/FreeSWSong.ogg",
+        url: "https://www.gnu.org/music/FreeSWSong.ogg",
     },
     {
         volume: 0.8,
-        text: "https://www.gnu.org/music/FreeSWSong.ogg",
+        url: "https://www.gnu.org/music/FreeSWSong.ogg",
     },
 ];
 var params = [
@@ -101,23 +102,23 @@ var execReq = async () => {
 
     for (const param of params) {
         console.log('executing Get: ' + JSON.stringify(param));
-        await execGetRequest(url, param).catch(onRejected);
+        await execGetRequest(notifyUrl, param).catch(onRejected);
         await sleep(3000).catch(onRejected);
     }
 
     for (const param of params) {
         console.log('executing Post: ' + JSON.stringify(param));
-        await execPostRequest(url, param).catch(onRejected);
+        await execPostRequest(notifyUrl, param).catch(onRejected);
         await sleep(3000).catch(onRejected);
     }
 
     for (const param of songParams) {
         console.log('executing Get: ' + JSON.stringify(param));
-        await execGetRequest(url, param).catch(onRejected);
+        await execGetRequest(playUrl, param).catch(onRejected);
         await sleep(10000).catch(onRejected);
 
         console.log('executing Post: ' + JSON.stringify(param));
-        await execPostRequest(url, param).catch(onRejected);
+        await execPostRequest(playUrl, param).catch(onRejected);
         await sleep(10000).catch(onRejected);
     }
     

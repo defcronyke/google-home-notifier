@@ -19,37 +19,50 @@ var sendText = (params, res) => {
       googlehome.volume(Number(params.volume));
     }
 
-    if (params.text.startsWith('http')){
-      var mp3_url = params.text;
-      googlehome.device(deviceName)
-          .play(mp3_url, (notifyRes) => {
-            if (!notifyRes) {
-              res.send(deviceName + ' cannot play sound.\n');
-              return;
-            }
-            console.log(notifyRes);
-            res.send(deviceName + ' will play sound from url: ' + mp3_url + '\n');
-          });
-    } else {
-      if (params.language) {
-        googlehome.language(params.language);
-      }
-      if (params.speed) {
-        googlehome.speed(Number(params.speed));
-      }
-      if (params.timeout) {
-        googlehome.timeout(Number(params.timeout));
-      }
-      googlehome.device(deviceName)
-          .notify(params.text, (notifyRes) => {
-            if (!notifyRes) {
-              res.send(deviceName + ' cannot say text.\n');
-              return;
-            }
-            console.log(notifyRes);
-            res.send(deviceName + ' will say: ' + params.text + '\n');
-          });
+    if (params.language) {
+      googlehome.language(params.language);
     }
+    if (params.speed) {
+      googlehome.speed(Number(params.speed));
+    }
+    if (params.timeout) {
+      googlehome.timeout(Number(params.timeout));
+    }
+    googlehome.device(deviceName)
+        .notify(params.text, (notifyRes) => {
+          if (!notifyRes) {
+            res.send(deviceName + ' cannot say text.\n');
+            return;
+          }
+          console.log(notifyRes);
+          res.send(deviceName + ' will say: ' + params.text + '\n');
+        });
+  } catch (err) {
+    console.log(err);
+    res.sendStatus(500);
+    res.send(err);
+  }
+};
+
+var playUrl = (params, res) => {
+  try {
+    if (params.ip) {
+      googlehome.ip(params.ip);
+    }
+    if (params.volume) {
+      googlehome.volume(Number(params.volume));
+    }
+
+    var mp3_url = params.url;
+    googlehome.device(deviceName)
+        .play(mp3_url, (notifyRes) => {
+          if (!notifyRes) {
+            res.send(deviceName + ' cannot play sound.\n');
+            return;
+          }
+          console.log(notifyRes);
+          res.send(deviceName + ' will play sound from url: ' + mp3_url + '\n');
+        });
   } catch (err) {
     console.log(err);
     res.sendStatus(500);
@@ -69,6 +82,18 @@ app.post('/google-home-notifier', urlencodedParser, (req, res) => {
   }
 });
 
+app.post('/google-home-play', urlencodedParser, (req, res) => {
+  
+  if (!req.body) return res.sendStatus(400)
+  console.log(req.body);
+  
+  if (req.body.url) {
+    playUrl(req.body, res);
+  } else {
+    res.send('Please POST "url=http://xxx.yyy.zzz/music.mp3"');
+  }
+});
+
 app.get('/google-home-notifier', (req, res) => {
 
   console.log(req.query);
@@ -77,6 +102,17 @@ app.get('/google-home-notifier', (req, res) => {
     sendText(req.query, res);
   } else {
     res.send('Please GET "text=Hello+Google+Home"');
+  }
+});
+
+app.get('/google-home-play', (req, res) => {
+
+  console.log(req.query);
+
+  if (req.query.url) {
+    playUrl(req.query, res);
+  } else {
+    res.send('Please GET "url=http://xxx.yyy.zzz/music.mp3"');
   }
 });
 
