@@ -3,6 +3,7 @@ var DefaultMediaReceiver = require('castv2-client').DefaultMediaReceiver;
 var googletts = require('google-tts-api');
 var mdns = require('mdns');
 var browser;
+var deviceName;
 var deviceAddress;
 var language = 'us';
 var speechRate = 1;
@@ -43,9 +44,14 @@ var startMdnsBrowser = (callback) => {
 };
 
 var notify = (message, callback) => {
+  if (!deviceName) {
+    console.log('device name should be supplied before notify');
+    callback();
+    return;
+  }
   if (!deviceAddress) {
     startMdnsBrowser((service) => {
-      if (service.name.includes(device.replace(' ', '-'))){
+      if (service.name.includes(deviceName.replace(' ', '-'))){
         deviceAddress = service.addresses[0];
         ttsAndPlay(message, deviceAddress, (res) => {
           callback(res);
@@ -63,9 +69,14 @@ var notify = (message, callback) => {
 };
 
 var play = (mp3_url, callback) => {
+  if (!deviceName) {
+    console.log('device name should be supplied before play');
+    callback();
+    return;
+  }
   if (!deviceAddress) {
     startMdnsBrowser((service) => {
-      if (service.name.includes(device.replace(' ', '-'))){
+      if (service.name.includes(deviceName.replace(' ', '-'))){
         deviceAddress = service.addresses[0];
         playMp3onDevice(deviceAddress, mp3_url, (res) => {
           callback(res);
@@ -150,7 +161,7 @@ exports.ip = (ip) => {
   return this;
 }
 exports.device = (name) => {
-  device = name;
+  deviceName = name;
   return this;
 };
 exports.language = (lang) => {
