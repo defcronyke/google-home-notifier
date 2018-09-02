@@ -50,6 +50,8 @@ var notify = (message, callback) => {
         ttsAndPlay(message, deviceAddress, (res) => {
           callback(res);
         });
+      } else {
+        callback();
       }
       browser.stop();
     });
@@ -68,6 +70,8 @@ var play = (mp3_url, callback) => {
         playMp3onDevice(deviceAddress, mp3_url, (res) => {
           callback(res);
         });
+      } else {
+        callback();
       }
       browser.stop();
     });
