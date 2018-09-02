@@ -1,90 +1,13 @@
-require('log-timestamp');
-var request = require('request');
+var googlehome = require('./google-home-notifier');
+var deviceName = 'Google Home';
+var deviceAddress = '192.168.1.4';
 
-var url = "http://192.168.1.8:8091/google-home-notifier";
+var express = require('express');
+var app = express();
+const serverPort = 8094; // default port
 
-var songParams = [
-    {
-        volume: 1.0,
-        text: "https://www.gnu.org/music/FreeSWSong.ogg",
-    },
-    {
-        volume: 0.8,
-        text: "https://www.gnu.org/music/FreeSWSong.ogg",
-    },
-];
-var params = [
-    {
-        volume: 1.0,
-        timeout: 1000,
-        speed: 1,
-        text: "Test Number 1",
-        language: "ja",
-    },
-    {
-        volume: 0.8,
-        text: "Test Number 2",
-        language: "en",
-    },
-    {
-        volume: 1.0,
-        text: "Test Number 3",
-        language: "ja",
-        ip: "192.168.1.4",
-    },
-    {
-        text: "Test Number 4",
-        language: "xx",
-    },
-    {
-        text: "Test Number 5",
-        language: "ja",
-        ip: "192.168.1.41",
-    },
-    {
-        volume: 1.1,
-        text: "Test Number 6",
-        language: "ja",
-    },
-    {
-        text: "Test Number 7",
-        language: "ja",
-        timeout: 10,
-    },
-    {
-        language: "ja",
-    },
-];
-
-var execPostRequest = (url, data) => {
-    var executor = (resolve, reject) => {
-        request.post({url:url, form:data}, (err, res, body) => {
-            if (err) {
-                reject("Error: " + err);
-            } else if (res.statusCode !== 200) {
-                reject("Response Code: " + res.statusCode);
-            } else {
-                resolve(body);
-            }
-        });
-    };
-    return new Promise(executor);
-};
-
-var execGetRequest = (url, data) => {
-    var executor = (resolve, reject) => {
-        request.get({url:url, qs:data}, (err, res, body) => {
-            if (err) {
-                reject("Error: " + err);
-            } else if (res.statusCode !== 200) {
-                reject("Response Code: " + res.statusCode);
-            } else {
-                resolve(body);
-            }
-        });
-    };
-    return new Promise(executor);
-};
+app.listen(serverPort, () => {
+});
 
 var sleep = (timeout) => {
     var executor = (resolve, reject) => {
@@ -98,29 +21,57 @@ var onRejected = (reason) => {
 };
 
 var execReq = async () => {
+  // device name should be supplied before notify/play
+  googlehome.notify('notify no.1', (notifyRes) => {
+    console.log('notify no.1: %s', (!notifyRes)? 'SUCCESS':'FAIL');
+  });
 
-    for (const param of params) {
-        console.log('executing Get: ' + JSON.stringify(param));
-        await execGetRequest(url, param).catch(onRejected);
-        await sleep(3000).catch(onRejected);
-    }
+  await sleep(3000).catch(onRejected);
 
-    for (const param of params) {
-        console.log('executing Post: ' + JSON.stringify(param));
-        await execPostRequest(url, param).catch(onRejected);
-        await sleep(3000).catch(onRejected);
-    }
+  // No error if invalid device name is supplied
+  googlehome.device('InvalidName', 'en')
+  googlehome.notify('notify no.2', (notifyRes) => {
+    console.log('notify no.2: %s',  (!notifyRes)? 'SUCCESS':'FAIL');
+    setTimeout(() => {
+      googlehome.notify('notify no.2, second', (notifyRes) => {
+        console.log('notify no.2, second: %s',
+          (!notifyRes)? 'SUCCESS':'FAIL');
+      });
+    }, 1000);
+  });
 
-    for (const param of songParams) {
-        console.log('executing Get: ' + JSON.stringify(param));
-        await execGetRequest(url, param).catch(onRejected);
-        await sleep(10000).catch(onRejected);
+  await sleep(5000).catch(onRejected);
 
-        console.log('executing Post: ' + JSON.stringify(param));
-        await execPostRequest(url, param).catch(onRejected);
-        await sleep(10000).catch(onRejected);
-    }
+  // success
+  googlehome.device(deviceName)
+    .language('ja')
+    .notify('notify No.3', (notifyRes) => {
+      console.log('notify no.3: %s', (notifyRes)? 'SUCCESS':'FAIL');
+    });
+
+  await sleep(5000).catch(onRejected);
+
+  // invalid timeout value should be ignored
+  googlehome.timeout('aaa')
+    .notify('notify No.4', (notifyRes) => {
+      console.log('notify no.4: %s', (notifyRes)? 'SUCCESS':'FAIL');
+    });
+
+  await sleep(3000).catch(onRejected);
+
+  // invalid speed value should be ignored
+  googlehome.speed('bbb')
+    .notify('notify No.5', (notifyRes) => {
+      console.log('notify no.5: %s', (notifyRes)? 'SUCCESS':'FAIL');
+    });
     
+  await sleep(3000).catch(onRejected);
+
+  // invalid timeout value should be ignored
+  googlehome.timeout('ccc')
+    .notify('notify No.6', (notifyRes) => {
+      console.log('notify no.6: %s', (notifyRes)? 'SUCCESS':'FAIL');
+    });
 };
 
 execReq();

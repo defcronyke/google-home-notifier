@@ -169,19 +169,31 @@ exports.language = (lang) => {
   return this;
 };
 exports.speed = (speed) => {
+  if (typeof(speed) !== 'number') {
+    console.log('Invalid speed value: %s', speed);
+    return this;
+  }
   speechRate = speed;
   return this;
 };
 exports.timeout = (timeout) => {
+  if (typeof(timeout) !== 'number') {
+    console.log('Invalid timeout value: %s', timeout);
+    return this;
+  }
   ttsTimeout = timeout;
   return this;
 };
 exports.volume = (volume) => {
+  if (typeof(volume) !== 'number') {
+    console.log('Invalid volume value: %s', volume);
+    return this;
+  }
   if (volume < 0.0 || volume > 1.0) {
     console.log('Invalid volume value: %f', volume);
-  } else {
-    speakerVolume = volume;
+    return this;
   }
+  speakerVolume = volume;
   return this;
 };
 exports.notify = notify;
