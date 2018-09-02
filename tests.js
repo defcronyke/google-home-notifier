@@ -3,70 +3,56 @@ var request = require('request');
 
 var url = "http://192.168.1.8:8091/google-home-notifier";
 
+var songParams = [
+    {
+        volume: 1.0,
+        text: "https://www.gnu.org/music/FreeSWSong.ogg",
+    },
+    {
+        volume: 0.8,
+        text: "https://www.gnu.org/music/FreeSWSong.ogg",
+    },
+];
 var params = [
     {
-        url: url,
-        data: {
-            volume: 1.0,
-            timeout: 1000,
-            speed: 1,
-            text: "Test Number 1",
-            language: "ja",
-        }
+        volume: 1.0,
+        timeout: 1000,
+        speed: 1,
+        text: "Test Number 1",
+        language: "ja",
     },
     {
-        url: url,
-        data: {
-            volume: 0.8,
-            text: "Test Number 2",
-            language: "en",
-        }
+        volume: 0.8,
+        text: "Test Number 2",
+        language: "en",
     },
     {
-        url: url,
-        data: {
-            volume: 1.0,
-            text: "Test Number 3",
-            language: "ja",
-            ip: "192.168.1.4",
-        }
+        volume: 1.0,
+        text: "Test Number 3",
+        language: "ja",
+        ip: "192.168.1.4",
     },
     {
-        url: url,
-        data: {
-            text: "Test Number 4",
-            language: "xx",
-        }
+        text: "Test Number 4",
+        language: "xx",
     },
     {
-        url: url,
-        data: {
-            text: "Test Number 5",
-            language: "ja",
-            ip: "192.168.1.41",
-        }
+        text: "Test Number 5",
+        language: "ja",
+        ip: "192.168.1.41",
     },
     {
-        url: url,
-        data: {
-            volume: 1.1,
-            text: "Test Number 6",
-            language: "ja",
-        }
+        volume: 1.1,
+        text: "Test Number 6",
+        language: "ja",
     },
     {
-        url: url,
-        data: {
-            text: "Test Number 7",
-            language: "ja",
-            timeout: 10,
-        }
+        text: "Test Number 7",
+        language: "ja",
+        timeout: 10,
     },
     {
-        url: url,
-        data: {
-            language: "ja",
-        }
+        language: "ja",
     },
 ];
 
@@ -83,7 +69,21 @@ var execPostRequest = (url, data) => {
         });
     };
     return new Promise(executor);
-    
+};
+
+var execGetRequest = (url, data) => {
+    var executor = (resolve, reject) => {
+        request.get({url:url, qs:data}, (err, res, body) => {
+            if (err) {
+                reject("Error: " + err);
+            } else if (res.statusCode !== 200) {
+                reject("Response Code: " + res.statusCode);
+            } else {
+                resolve(body);
+            }
+        });
+    };
+    return new Promise(executor);
 };
 
 var sleep = (timeout) => {
@@ -100,10 +100,27 @@ var onRejected = (reason) => {
 var execReq = async () => {
 
     for (const param of params) {
-        console.log('executing: ' + JSON.stringify(param.data));
-        await execPostRequest(param.url, param.data).catch(onRejected);
+        console.log('executing Get: ' + JSON.stringify(param));
+        await execGetRequest(url, param).catch(onRejected);
         await sleep(3000).catch(onRejected);
     }
+
+    for (const param of params) {
+        console.log('executing Post: ' + JSON.stringify(param));
+        await execPostRequest(url, param).catch(onRejected);
+        await sleep(3000).catch(onRejected);
+    }
+
+    for (const param of songParams) {
+        console.log('executing Get: ' + JSON.stringify(param));
+        await execGetRequest(url, param).catch(onRejected);
+        await sleep(10000).catch(onRejected);
+
+        console.log('executing Post: ' + JSON.stringify(param));
+        await execPostRequest(url, param).catch(onRejected);
+        await sleep(10000).catch(onRejected);
+    }
+    
 };
 
 execReq();
