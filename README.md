@@ -9,7 +9,7 @@ $ npm install google-home-notifier
 #### Usage
 ```javascript
 var googlehome = require('google-home-notifier');
-var language = 'pl'; // if not set 'us' language will be used
+var language = 'pl'; // if not set 'en' language will be used
 
 googlehome.device('Google Home', language); // Change to your Google Home name
 // or if you know your Google Home IP
@@ -35,17 +35,17 @@ Endpoints:
     https://xxxxx.ngrok.io/google-home-notifier
 GET example:
 curl -X GET https://xxxxx.ngrok.io/google-home-notifier?text=Hello+Google+Home  - to play given text
-curl -X GET https://xxxxx.ngrok.io/google-home-notifier?text=http%3A%2F%2Fdomain%2Ffile.mp3 - to play from given url
+curl -X GET https://xxxxx.ngrok.io/google-home-play?url=http%3A%2F%2Fdomain%2Ffile.mp3 - to play from given url
 POST example:
 curl -X POST -d "text=Hello Google Home" https://xxxxx.ngrok.io/google-home-notifier - to play given text
-curl -X POST -d "http://domain/file.mp3" https://xxxxx.ngrok.io/google-home-notifier - to play from given url
+curl -X POST -d "url=http://domain/file.mp3" https://xxxxx.ngrok.io/google-home-play - to play from given url
 
 ```
 #### Raspberry Pi
 If you are running from Raspberry Pi make sure you have the following before nunning "npm install":
 Use the latest nodejs dist.
 ```sh
-curl -sL https://deb.nodesource.com/setup_7.x | sudo -E bash -
+curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
 sudo apt-get install nodejs
 ```
 Also install these packages:
@@ -53,23 +53,4 @@ Also install these packages:
 sudo apt-get install git-core libnss-mdns libavahi-compat-libdnssd-dev
 ```
 
-## After "npm install"
 
-Modify the following file "node_modules/mdns/lib/browser.js"
-```sh
-vi node_modules/mdns/lib/browser.js
-```
-Find this line:
-```javascript
-Browser.defaultResolverSequence = [
-  rst.DNSServiceResolve(), 'DNSServiceGetAddrInfo' in dns_sd ? rst.DNSServiceGetAddrInfo() : rst.getaddrinfo()
-, rst.makeAddressesUnique()
-];
-```
-And change to:
-```javascript
-Browser.defaultResolverSequence = [
-  rst.DNSServiceResolve(), 'DNSServiceGetAddrInfo' in dns_sd ? rst.DNSServiceGetAddrInfo() : rst.getaddrinfo({families:[4]})
-, rst.makeAddressesUnique()
-];
-```
