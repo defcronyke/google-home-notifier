@@ -39,13 +39,13 @@ var startMdnsBrowser = (onDeviceFound, callback) => {
   });
   browser.on('serviceUp', (service) => {
     console.log('Device "%s" at %s:%d', service.name, service.addresses[0], service.port);
-      if (service.name.includes(deviceName.replace(' ', '-'))){
-        deviceAddress = service.addresses[0];
-        onDeviceFound(deviceAddress);
-      } else {
-        callback();
-      }
-      browser.stop();
+    if (service.name.includes(deviceName.replace(' ', '-'))){
+      deviceAddress = service.addresses[0];
+      onDeviceFound(deviceAddress);
+    } else {
+      callback();
+    }
+    browser.stop();
   });
 };
 
