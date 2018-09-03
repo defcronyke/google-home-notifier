@@ -1,3 +1,4 @@
+require('log-timestamp');
 var googlehome = require('./google-home-notifier');
 var deviceName = 'Google Home';
 var deviceAddress = '192.168.1.4';
