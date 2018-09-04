@@ -6,7 +6,7 @@ var app = express();
 const serverPort = 8091; // default port
 
 var deviceName = 'Google Home';
-var ip = '192.168.1.20'; // default IP
+var ip; // Google Home IP address
 
 var urlencodedParser = bodyParser.urlencoded({ extended: false });
 
@@ -15,24 +15,21 @@ app.post('/google-home-notifier', urlencodedParser, function (req, res) {
   if (!req.body) return res.sendStatus(400)
   console.log(req.body);
   
-  var text = req.body.text;
-  
-  if (req.body.ip) {
-     ip = req.body.ip;
-  }
-
   var language = 'pl'; // default language code
   if (req.body.language) {
     language = req.body.language;
+  }
+  if (req.body.ip) {
+    googlehome.ip(req.body.ip, language);
+    ip = req.body.ip;
+  } else {
+    googlehome.device(deviceName, language);
   }
   if (req.body.timeout) {
     googlehome.timeout(Number(req.body.timeout));
   }
 
-  googlehome.ip(ip, language);
-  googlehome.device(deviceName,language);
-  googlehome.accent(language);
-
+  var text = req.body.text;
   if (text){
     try {
       if (text.startsWith('http')){
@@ -69,24 +66,21 @@ app.get('/google-home-notifier', function (req, res) {
 
   console.log(req.query);
 
-  var text = req.query.text;
-
-  if (req.query.ip) {
-     ip = req.query.ip;
-  }
-
   var language = 'pl'; // default language code
   if (req.query.language) {
     language = req.query.language;
+  }
+  if (req.query.ip) {
+    googlehome.ip(req.query.ip, language);
+    ip = req.query.ip;
+  } else {
+    googlehome.device(deviceName, language);
   }
   if (req.query.timeout) {
     googlehome.timeout(Number(req.query.timeout));
   }
 
-  googlehome.ip(ip, language);
-  googlehome.device(deviceName,language);
-  googlehome.accent(language);
-
+  var text = req.query.text;
   if (text) {
     try {
       if (text.startsWith('http')){
