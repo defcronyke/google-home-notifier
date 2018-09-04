@@ -22,20 +22,19 @@ var onRejected = (reason) => {
 };
 
 var execReq = async () => {
-  // device name should be supplied before notify/play
-  googlehome.notify('notify no.1', (notifyRes) => {
-    console.log('notify no.1: %s', (!notifyRes)? 'SUCCESS':'FAIL');
+  googlehome.notify('Device name should be supplied', (notifyRes) => {
+    console.log('Device name should be supplied: %s',
+      (!notifyRes)? 'SUCCESS':'FAIL');
   });
 
   await sleep(3000).catch(onRejected);
 
-  // No error if invalid device name is supplied
-  googlehome.device('InvalidName', 'en')
-  googlehome.notify('notify no.2', (notifyRes) => {
-    console.log('notify no.2: %s',  (!notifyRes)? 'SUCCESS':'FAIL');
+  googlehome.device('InvalidName');
+  googlehome.notify('Invalid device name', (notifyRes) => {
+    console.log('Invalid device name: %s',  (!notifyRes)? 'SUCCESS':'FAIL');
     setTimeout(() => {
-      googlehome.notify('notify no.2, second', (notifyRes) => {
-        console.log('notify no.2, second: %s',
+      googlehome.notify('Second search of Google Home', (notifyRes) => {
+        console.log('Second search of Google Home: %s',
           (!notifyRes)? 'SUCCESS':'FAIL');
       });
     }, 1000);
@@ -43,35 +42,43 @@ var execReq = async () => {
 
   await sleep(5000).catch(onRejected);
 
-  // success
+  googlehome.ip(deviceAddress)
+    .notify('IP address', (notifyRes) => {
+      console.log('IP address: %s', (notifyRes)? 'SUCCESS':'FAIL');
+    });
+    ;
+
+  await sleep(3000).catch(onRejected);
+
   googlehome.device(deviceName)
+    .ip(undefined)
     .language('ja')
-    .notify('notify No.3', (notifyRes) => {
-      console.log('notify no.3: %s', (notifyRes)? 'SUCCESS':'FAIL');
+    .notify('Device name', (notifyRes) => {
+      console.log('Device name: %s', (notifyRes)? 'SUCCESS':'FAIL');
     });
 
   await sleep(5000).catch(onRejected);
 
-  // invalid timeout value should be ignored
   googlehome.timeout('aaa')
-    .notify('notify No.4', (notifyRes) => {
-      console.log('notify no.4: %s', (notifyRes)? 'SUCCESS':'FAIL');
+    .notify('Invalid timeout value should be ignored', (notifyRes) => {
+      console.log('Invalid timeout value should be ignored: %s',
+        (notifyRes)? 'SUCCESS':'FAIL');
     });
 
   await sleep(3000).catch(onRejected);
 
-  // invalid speed value should be ignored
   googlehome.speed('bbb')
-    .notify('notify No.5', (notifyRes) => {
-      console.log('notify no.5: %s', (notifyRes)? 'SUCCESS':'FAIL');
+    .notify('Invalid speed value should be ignored', (notifyRes) => {
+      console.log('Invalid speed value should be ignored: %s',
+        (notifyRes)? 'SUCCESS':'FAIL');
     });
     
   await sleep(3000).catch(onRejected);
 
-  // invalid timeout value should be ignored
-  googlehome.timeout('ccc')
-    .notify('notify No.6', (notifyRes) => {
-      console.log('notify no.6: %s', (notifyRes)? 'SUCCESS':'FAIL');
+  googlehome.volume('ccc')
+    .notify('Invalid volume value should be ignored', (notifyRes) => {
+      console.log('Invalid volume value should be ignored: %s',
+        (notifyRes)? 'SUCCESS':'FAIL');
     });
 };
 
