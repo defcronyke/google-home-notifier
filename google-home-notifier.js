@@ -4,18 +4,14 @@ var googletts = require('google-tts-api');
 var mdns = require('mdns');
 var browser;
 var deviceName;
-var deviceAddress;
-var language = 'us';
-var speechRate = 1;
-var ttsTimeout = 1000;
-var speakerVolume;
-const defaultValue = {
+const defaultParams = {
   language: 'en',
   deviceAddress: undefined,
   speechRate: 1.0,
   ttsTimeout: 1000,
-  speakerVolume: 0.5,
+  speakerVolume: undefined,
 };
+var params = JSON.parse(JSON.stringify(defaultParams));
 
 var createMdnsBrowser = () => {
   var sequence = [
@@ -29,21 +25,21 @@ var createMdnsBrowser = () => {
     {resolverSequence: sequence});
 };
 
-var startMdnsBrowser = (onDeviceFound, callback) => {
+var startMdnsBrowser = (successCallback, errorCallback) => {
   browser = createMdnsBrowser();
   browser.start();
   browser.on('error', (err) => {
     console.log('Browser Error: %s', err.message);
     browser.stop();
-    callback();
+    errorCallback();
   });
   browser.on('serviceUp', (service) => {
     console.log('Device "%s" at %s:%d', service.name, service.addresses[0], service.port);
     if (service.name.includes(deviceName.replace(' ', '-'))){
-      deviceAddress = service.addresses[0];
-      onDeviceFound(deviceAddress);
+      params.deviceAddress = service.addresses[0];
+      successCallback(params.deviceAddress);
     } else {
-      callback();
+      errorCallback();
     }
     browser.stop();
   });
@@ -55,14 +51,14 @@ var notify = (message, callback) => {
     callback();
     return;
   }
-  if (!deviceAddress) {
+  if (!params.deviceAddress) {
     startMdnsBrowser((deviceAddress) => {
       ttsAndPlay(message, deviceAddress, (res) => {
         callback(res);
       });
     }, callback);
   } else {
-    ttsAndPlay(message, deviceAddress, (res) => {
+    ttsAndPlay(message, params.deviceAddress, (res) => {
       callback(res);
     });
   }
@@ -74,29 +70,29 @@ var play = (mp3_url, callback) => {
     callback();
     return;
   }
-  if (!deviceAddress) {
+  if (!params.deviceAddress) {
     startMdnsBrowser((deviceAddress) => {
       playMp3onDevice(deviceAddress, mp3_url, (res) => {
         callback(res);
       });
     }, callback);
   } else {
-    playMp3onDevice(deviceAddress, mp3_url, (res) => {
+    playMp3onDevice(params.deviceAddress, mp3_url, (res) => {
       callback(res)
     });
   }
 };
 
 var ttsAndPlay = (text, host, callback) => {
-  googletts(text, language, speechRate, ttsTimeout).then((url) => {
+  googletts(text, params.language, params.speechRate, params.ttsTimeout).then((url) => {
     playMp3onDevice(host, url, (res) => {
       callback(res)
     });
   }).catch((err) => {
     console.log('googletts error: ' + err);
-    ttsTimeout = defaultValue.ttsTimeout;
-    speechRate = defaultValue.speechRate;
-    language = defaultValue.language;
+    params.ttsTimeout = defaultParams.ttsTimeout;
+    params.speechRate = defaultParams.speechRate;
+    params.language = defaultParams.language;
     callback();
   });
 };
@@ -105,15 +101,15 @@ var playMp3onDevice = (host, url, callback) => {
   console.log('playing %s on %s', url, host);
   var client = new Client();
   client.connect(host, () => {
-    if (speakerVolume) {
-      client.setVolume({level: speakerVolume}, (err, vol) => {
+    if (params.speakerVolume) {
+      client.setVolume({level: params.speakerVolume}, (err, vol) => {
         if (err) {
           console.log('Failed to set volume: %s', err.message);
           client.close();
           callback();
           return;
         }
-        speakerVolume = undefined;
+        params.speakerVolume = defaultParams.speakerVolume;
       });
     };
     client.launch(DefaultMediaReceiver, (err, player) => {
@@ -131,7 +127,7 @@ var playMp3onDevice = (host, url, callback) => {
       player.load(media, { autoplay: true }, (err, status) => {
         if (err) {
           console.log('Failed to load: %s', err.message);
-          language = defaultValue.language;
+          params.language = defaultParams.language;
           client.close();
           callback();
           return;
@@ -144,14 +140,14 @@ var playMp3onDevice = (host, url, callback) => {
 
   client.on('error', (err) => {
     console.log('Client Error: %s', err.message);
-    deviceAddress = defaultValue.deviceAddress;
+    params.deviceAddress = defaultParams.deviceAddress;
     client.close();
     callback();
   });
 };
 
 exports.ip = (ip) => {
-  deviceAddress = ip;
+  params.deviceAddress = ip;
   return this;
 }
 exports.device = (name) => {
@@ -159,7 +155,7 @@ exports.device = (name) => {
   return this;
 };
 exports.language = (lang) => {
-  language = lang;
+  params.language = lang;
   return this;
 };
 exports.speed = (speed) => {
@@ -167,7 +163,7 @@ exports.speed = (speed) => {
     console.log('Invalid speed value: %s', speed);
     return this;
   }
-  speechRate = speed;
+  params.speechRate = speed;
   return this;
 };
 exports.timeout = (timeout) => {
@@ -175,7 +171,7 @@ exports.timeout = (timeout) => {
     console.log('Invalid timeout value: %s', timeout);
     return this;
   }
-  ttsTimeout = timeout;
+  params.ttsTimeout = timeout;
   return this;
 };
 exports.volume = (volume) => {
@@ -187,7 +183,7 @@ exports.volume = (volume) => {
     console.log('Invalid volume value: %f', volume);
     return this;
   }
-  speakerVolume = volume;
+  params.speakerVolume = volume;
   return this;
 };
 exports.notify = notify;
