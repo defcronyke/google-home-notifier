@@ -117,7 +117,7 @@ app.get('/google-home-play', (req, res) => {
   }
 });
 
-app.listen(serverPort, function () {
+app.listen(serverPort, () => {
   ngrok.connect({configPath: '/home/pi/.ngrok2/ngrok.yml', addr: serverPort}, (err, url) => {
     if (err) {
       console.log('ngrok.connect failed');
