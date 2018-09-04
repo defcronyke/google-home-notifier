@@ -44,12 +44,12 @@ var createMdnsBrowser = function() {
 };
 
 var notify = function(message, callback) {
-  if (!deviceName) {
-    console.log('deviceName should be supplied before notify');
-    callback();
-    return;
-  }
   if (!deviceAddress){
+    if (!deviceName) {
+      console.log('Device address or device name should be supplied before notify');
+      callback();
+      return;
+    }
     browser = createMdnsBrowser();
     browser.start();
     browser.on('error', function(err) {
@@ -77,12 +77,12 @@ var notify = function(message, callback) {
 };
 
 var play = function(mp3_url, callback) {
-  if (!deviceName) {
-    console.log('deviceName should be supplied before play');
-    callback();
-    return;
-  }
   if (!deviceAddress){
+    if (!deviceName) {
+      console.log('Device address or device name should be supplied before notify');
+      callback();
+      return;
+    }
     browser = createMdnsBrowser();
     browser.start();
     browser.on('error', function(err) {
