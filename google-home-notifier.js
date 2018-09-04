@@ -46,12 +46,12 @@ var startMdnsBrowser = (successCallback, errorCallback) => {
 };
 
 var notify = (message, callback) => {
-  if (!deviceName) {
-    console.log('device name should be supplied before notify');
-    callback();
-    return;
-  }
   if (!params.deviceAddress) {
+    if (!deviceName) {
+      console.log('Device address or device name should be supplied before notify');
+      callback();
+      return;
+    }
     startMdnsBrowser((deviceAddress) => {
       ttsAndPlay(message, deviceAddress, (res) => {
         callback(res);
@@ -65,12 +65,12 @@ var notify = (message, callback) => {
 };
 
 var play = (mp3_url, callback) => {
-  if (!deviceName) {
-    console.log('device name should be supplied before play');
-    callback();
-    return;
-  }
   if (!params.deviceAddress) {
+    if (!deviceName) {
+      console.log('Device address or device name should be supplied before play');
+      callback();
+      return;
+    }
     startMdnsBrowser((deviceAddress) => {
       playMp3onDevice(deviceAddress, mp3_url, (res) => {
         callback(res);

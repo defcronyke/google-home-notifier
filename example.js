@@ -13,6 +13,8 @@ var sendText = (params, res) => {
   try {
     if (params.ip) {
       googlehome.ip(params.ip);
+    } else {
+      googlehome.device(deviceName);
     }
     if (params.volume) {
       googlehome.volume(Number(params.volume));
@@ -27,15 +29,14 @@ var sendText = (params, res) => {
     if (params.timeout) {
       googlehome.timeout(Number(params.timeout));
     }
-    googlehome.device(deviceName)
-        .notify(params.text, (notifyRes) => {
-          if (!notifyRes) {
-            res.send(deviceName + ' cannot say text.\n');
-            return;
-          }
-          console.log(notifyRes);
-          res.send(deviceName + ' will say: ' + params.text + '\n');
-        });
+    googlehome.notify(params.text, (notifyRes) => {
+        if (!notifyRes) {
+          res.send(deviceName + ' cannot say text.\n');
+          return;
+        }
+        console.log(notifyRes);
+        res.send(deviceName + ' will say: ' + params.text + '\n');
+      });
   } catch (err) {
     console.log(err);
     res.sendStatus(500);
@@ -47,21 +48,22 @@ var playUrl = (params, res) => {
   try {
     if (params.ip) {
       googlehome.ip(params.ip);
+    } else {
+      googlehome.device(deviceName);
     }
     if (params.volume) {
       googlehome.volume(Number(params.volume));
     }
 
     var mp3_url = params.url;
-    googlehome.device(deviceName)
-        .play(mp3_url, (notifyRes) => {
-          if (!notifyRes) {
-            res.send(deviceName + ' cannot play sound.\n');
-            return;
-          }
-          console.log(notifyRes);
-          res.send(deviceName + ' will play sound from url: ' + mp3_url + '\n');
-        });
+    googlehome.play(mp3_url, (notifyRes) => {
+        if (!notifyRes) {
+          res.send(deviceName + ' cannot play sound.\n');
+          return;
+        }
+        console.log(notifyRes);
+        res.send(deviceName + ' will play sound from url: ' + mp3_url + '\n');
+      });
   } catch (err) {
     console.log(err);
     res.sendStatus(500);
