@@ -3,17 +3,23 @@ Send notifications to Google Home
 
 #### Installation
 ```sh
-$ npm install google-home-notifier
+$ git clone https://github.com/kazhik/google-home-notifier.git
 ```
 
 #### Usage
 ```javascript
 var googlehome = require('google-home-notifier');
-var language = 'pl'; // if not set 'en' language will be used
 
-googlehome.device('Google Home', language); // Change to your Google Home name
-// or if you know your Google Home IP
-// googlehome.ip('192.168.1.20', language);
+// Required parameter
+googlehome.device('Google Home'); // Change to your Google Home name
+// or if you know your Google Home IP address
+// googlehome.ip('192.168.1.20');
+
+// Optional parameters
+googlehome.language('pl'); // if not set 'en' language will be used
+  .volume(1.0); // max: 1.0
+  .timeout(2000); // TTS timeout: default value is 1000ms
+  .speed(0.8); // TTS speed: default value is 1.0
 
 googlehome.notify('Hey Foo', function(res) {
   console.log(res);
@@ -26,7 +32,7 @@ The example uses ngrok so the server can be reached from outside your network.
 I tested with ifttt.com Maker channel and it worked like a charm.
 
 ```sh
-$ git clone https://github.com/noelportugal/google-home-notifier
+$ git clone https://github.com/kazhik/google-home-notifier
 $ cd google-home-notifier
 $ npm install
 $ node example.js
