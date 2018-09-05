@@ -22,6 +22,8 @@
     "ngrok": "^2.2.4"
   },
   "devDependencies": {
-    "log-timestamp": "^0.1.2"
+    "expect.js": "^0.3.1",
+    "log-timestamp": "^0.1.2",
+    "mocha": "^5.2.0"
   }
 }
