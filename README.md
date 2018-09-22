@@ -4,6 +4,8 @@ Send notifications to Google Home
 #### Installation
 ```sh
 $ git clone https://github.com/kazhik/google-home-notifier.git
+$ cd google-home-notifier
+$ npm install
 ```
 
 #### Usage
@@ -59,4 +61,11 @@ Also install these packages:
 sudo apt-get install git-core libnss-mdns libavahi-compat-libdnssd-dev
 ```
 
+#### Test
 
+test/testlib.js for testing google-home-notifier.js, test/testapp.js for testing example.js.
+
+```sh
+$ npm test
+```
+Coverage report is generated under `coverage` directory.
